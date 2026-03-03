@@ -1,2 +1,9 @@
 node_modules/
 .env
+
+# 运行时数据（用户Token、日志、API Key池）
+data/
+
+# 系统文件
+.DS_Store
+Thumbs.db
