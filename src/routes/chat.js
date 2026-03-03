@@ -13,7 +13,7 @@ const {
 
 const router = express.Router();
 
-const VERTEX_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+const VERTEX_BASE_URL = "https://aiplatform.googleapis.com/v1/publishers/google/models";
 
 // 截断字符串，避免日志过大
 function truncate(str, max = 8000) {
