@@ -4,7 +4,7 @@
 
 ## ✨ 功能特性
 
-- 🔄 **OpenAI 兼容** — 支持 `/v1/chat/completions` 和 `/v1/models`
+- 🔄 **OpenAI 兼容** — 支持 `/v1/chat/completions`, `/v1/images/generations`, `/v1/embeddings` 以及 `/v1/models`
 - 🌊 **流式响应** — 完整 SSE 支持
 - 🔑 **多 Key 池** — 轮询负载均衡，可单独启用/禁用
 - 👥 **用户管理** — 为不同用户生成专属 Token
@@ -151,9 +151,19 @@ for chunk in stream:
 
 ## 🤖 支持的模型
 
-- gemini-2.5-pro / gemini-2.5-flash
-- gemini-2.0-flash / gemini-2.0-flash-lite
-- gemini-1.5-pro / gemini-1.5-flash
+### 💬 对话模型 (Chat Completions)
+- **Gemini 3 系列**：gemini-3.0-pro / gemini-3.0-flash
+- **Gemini 2 系列**：gemini-2.5-pro / gemini-2.5-flash / gemini-2.0-flash / gemini-2.0-flash-lite
+- **Gemini 1.5 系列**：gemini-1.5-pro / gemini-1.5-flash
+
+### 🎨 图像生成模型 (Image Generation)
+- imagen-3.0-generate-001
+
+### 🧬 向量嵌入模型 (Embeddings)
+- text-embedding-005 / text-embedding-004
+- text-multilingual-embedding-002
+- multimodalembedding@001
+- gemini-embedding-001
 
 ## 📁 项目结构
 
