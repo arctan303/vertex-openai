@@ -12,6 +12,7 @@ const compression = require("compression");
 const store = require("./store");
 const chatRoutes = require("./routes/chat");
 const modelsRoutes = require("./routes/models");
+const imagesRoutes = require("./routes/images");
 const adminRoutes = require("./routes/admin");
 
 const app = express();
@@ -148,6 +149,7 @@ app.use("/v1", (req, res, next) => {
 
 // 路由
 app.use("/v1/chat/completions", chatRoutes);
+app.use("/v1/images/generations", imagesRoutes);
 app.use("/v1/models", modelsRoutes);
 app.use("/admin", adminRoutes);
 
@@ -170,6 +172,7 @@ app.listen(PORT, () => {
     console.log(`✅ Vertex-OpenAI proxy running on http://localhost:${PORT}`);
     console.log(`   Endpoints:`);
     console.log(`   POST /v1/chat/completions`);
+    console.log(`   POST /v1/images/generations`);
     console.log(`   GET  /v1/models`);
     console.log(`   GET  /admin`);
     console.log(`   Security: rate-limit=${RATE_LIMIT_MAX}/min, gzip=on, security-headers=on`);
