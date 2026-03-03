@@ -1,0 +1,16 @@
+{
+  "name": "vertex-openai-proxy",
+  "version": "1.0.0",
+  "description": "Vertex AI (Gemini) to OpenAI API format conversion proxy",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-fetch": "^2.7.0"
+  }
+}
