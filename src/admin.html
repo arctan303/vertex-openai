@@ -4,55 +4,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vertex-OpenAI 代理管理后台</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Vertex-OpenAI Proxy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f0f2f5;
-      --white: #ffffff;
-      --surface: #ffffff;
-      --border: #e8eaed;
-      --text: #1a1a2e;
-      --text2: #6b7280;
+      --bg: #f8fafc;
+      --surface: rgba(255, 255, 255, 0.75);
+      --surface-solid: #ffffff;
+      --border: rgba(226, 232, 240, 0.8);
+      --text: #0f172a;
+      --text2: #64748b;
+
+      /* Vibrant Gradients & Accents */
       --primary: #6366f1;
-      --primary-light: #eef2ff;
       --primary-hover: #4f46e5;
-      --green: #10b981;
-      --green-light: #ecfdf5;
-      --green-text: #059669;
+      --primary-light: rgba(99, 102, 241, 0.1);
+
+      --gradient-brand: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --gradient-green: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      --gradient-orange: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+      --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+
       --red: #ef4444;
-      --red-light: #fef2f2;
-      --red-text: #dc2626;
-      --orange: #f59e0b;
-      --orange-light: #fffbeb;
-      --orange-text: #d97706;
-      --blue: #3b82f6;
-      --blue-light: #eff6ff;
-      --purple: #8b5cf6;
-      --purple-light: #f5f3ff;
-      --radius: 12px;
-      --shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px rgba(0, 0, 0, .04);
-      --shadow-lg: 0 10px 25px rgba(0, 0, 0, .1);
+      --green-text: #059669;
+      --green-light: rgba(16, 185, 129, 0.1);
+
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 32px;
+
+      --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 20px 60px -15px rgba(99, 102, 241, 0.15);
+      --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.3);
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Inter', 'Segoe UI', 'Microsoft YaHei', sans-serif;
-      background: var(--bg);
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background-color: var(--bg);
       color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
       min-height: 100vh;
+      position: relative;
     }
 
-    /* Login */
+    /* Soft Animated Background Blobs */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: -1;
+      animation: float 20s infinite alternate ease-in-out;
+      opacity: 0.4;
+    }
+
+    body::before {
+      background: rgba(99, 102, 241, 0.3);
+      top: -100px;
+      left: -100px;
+    }
+
+    body::after {
+      background: rgba(168, 85, 247, 0.2);
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(100px, 50px) scale(1.2);
+      }
+    }
+
+    /* --- Login Overlay --- */
     .login-overlay {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: rgba(248, 250, 252, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -60,611 +106,729 @@
     }
 
     .login-box {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 48px 40px;
-      width: 400px;
+      background: var(--surface-solid);
+      border-radius: var(--radius-lg);
+      padding: 50px 40px;
+      width: 420px;
       text-align: center;
       box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transform: translateY(0);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .login-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 30px 60px -15px rgba(99, 102, 241, 0.25);
+    }
+
+    .login-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      background: var(--gradient-brand);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      box-shadow: var(--shadow-glow);
     }
 
     .login-box h2 {
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      background: var(--gradient-brand);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .login-box p {
       color: var(--text2);
-      font-size: 13px;
-      margin-bottom: 28px;
+      margin-bottom: 30px;
+      font-size: 15px;
     }
 
-    .login-box input {
+    .input-curved {
       width: 100%;
-      background: var(--bg);
+      padding: 16px 24px;
       border: 2px solid var(--border);
-      color: var(--text);
-      padding: 14px 18px;
-      border-radius: 10px;
-      font-size: 15px;
-      outline: none;
-      margin-bottom: 16px;
+      border-radius: 999px;
+      /* Pill shape */
+      font-size: 16px;
+      font-family: inherit;
+      background: #f8fafc;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
       text-align: center;
       letter-spacing: 2px;
-      transition: border .2s;
     }
 
-    .login-box input:focus {
+    .input-curved:focus {
+      outline: none;
       border-color: var(--primary);
-      background: var(--white);
+      background: #fff;
+      box-shadow: 0 0 0 4px var(--primary-light);
     }
 
-    .login-box .btn {
-      width: 100%;
-      padding: 14px;
-      font-size: 15px;
-      border-radius: 10px;
-    }
-
-    .login-error {
-      color: var(--red);
-      font-size: 13px;
-      margin-top: 12px;
-      display: none;
-    }
-
-    .login-box .icon {
-      font-size: 48px;
-      margin-bottom: 20px;
-    }
-
-    /* Header */
-    .header {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 0 28px;
-      display: flex;
-      align-items: center;
-      height: 60px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
-    }
-
-    .header .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header .logo-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--primary), #8b5cf6);
-      border-radius: 8px;
-      display: flex;
+    .btn {
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 14px;
+      gap: 8px;
     }
 
-    .header h1 {
+    .btn-pill {
+      width: 100%;
+      padding: 16px 32px;
+      border-radius: 999px;
+      background: var(--gradient-brand);
+      color: white;
       font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
     }
 
-    .header-right {
-      margin-left: auto;
+    .btn-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+    }
+
+    #login-error {
+      color: var(--red);
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-5px);
+      }
+
+      75% {
+        transform: translateX(5px);
+      }
+    }
+
+    /* --- Main App Layout --- */
+    .main-app {
+      display: none;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Header & Navigation */
+    .header-nav {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 32px;
+      position: sticky;
+      top: 24px;
+      z-index: 100;
+    }
+
+    .brand {
       display: flex;
       align-items: center;
       gap: 16px;
     }
 
-    .header .logout {
-      color: var(--text2);
-      cursor: pointer;
-      font-size: 13px;
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-brand);
+      border-radius: 14px;
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      transition: all .2s;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
     }
 
-    .header .logout:hover {
-      background: var(--red-light);
-      color: var(--red);
+    .brand h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
     }
 
-    /* Tabs */
-    .tabs {
+    .nav-tabs {
       display: flex;
-      gap: 0;
-      background: var(--white);
-      padding: 0 28px;
-      border-bottom: 1px solid var(--border);
+      gap: 8px;
+      background: rgba(241, 245, 249, 0.8);
+      padding: 6px;
+      border-radius: 999px;
     }
 
-    .tab {
-      padding: 14px 22px;
+    .nav-tab {
+      padding: 10px 24px;
+      border-radius: 999px;
       cursor: pointer;
-      color: var(--text2);
-      border-bottom: 2px solid transparent;
-      transition: all .2s;
+      font-weight: 600;
       font-size: 14px;
-      font-weight: 500;
+      color: var(--text2);
+      transition: all 0.3s;
     }
 
-    .tab:hover {
+    .nav-tab:hover {
       color: var(--text);
-      background: var(--bg);
     }
 
-    .tab.active {
+    .nav-tab.active {
+      background: white;
       color: var(--primary);
-      border-bottom-color: var(--primary);
-      background: transparent;
+      box-shadow: var(--shadow-sm);
     }
 
-    /* Content */
-    .content {
-      padding: 24px 28px;
-      max-width: 1400px;
-      margin: 0 auto;
+    .logout-btn {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 10px 20px;
+      border-radius: 999px;
     }
 
+    .logout-btn:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* --- Content Panels --- */
     .panel {
       display: none;
+      animation: fadeIn 0.4s ease-out;
     }
 
     .panel.active {
       display: block;
     }
 
-    /* Cards */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Stats Grid */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
     }
 
     .stat-card {
-      background: var(--white);
+      background: var(--surface);
+      backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
 
-    .stat-card .label {
-      font-size: 13px;
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .stat-card.purple::before {
+      background: var(--gradient-brand);
+    }
+
+    .stat-card.green::before {
+      background: var(--gradient-green);
+    }
+
+    .stat-card.orange::before {
+      background: var(--gradient-orange);
+    }
+
+    .stat-card.blue::before {
+      background: var(--gradient-blue);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      font-weight: 600;
       color: var(--text2);
-      font-weight: 500;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    .stat-card .label .ico {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .stat-card .value {
-      font-size: 30px;
+    .stat-value {
+      font-size: 36px;
       font-weight: 700;
+      letter-spacing: -1px;
     }
 
-    .stat-card.purple .value {
+    .stat-card.purple .stat-value {
       color: var(--primary);
     }
 
-    .stat-card.green .value {
+    .stat-card.green .stat-value {
       color: var(--green-text);
     }
 
-    .stat-card.orange .value {
-      color: var(--orange-text);
+    .stat-card.orange .stat-value {
+      color: #d97706;
     }
 
-    .stat-card.blue .value {
-      color: var(--blue);
-    }
-
-    .stat-card.red .value {
-      color: var(--red-text);
+    .stat-card.blue .stat-value {
+      color: #2563eb;
     }
 
     /* Tables */
-    .table-wrap {
-      background: var(--white);
+    .glass-container {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 32px;
+      overflow-x: auto;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      /* Curved rows */
+      font-size: 14px;
     }
 
     th {
-      background: var(--bg);
+      text-align: left;
+      padding: 0 20px 12px;
       color: var(--text2);
       font-weight: 600;
-      text-align: left;
-      padding: 12px 16px;
-      position: sticky;
-      top: 0;
-      white-space: nowrap;
-      font-size: 12px;
+      font-size: 13px;
       text-transform: uppercase;
-      letter-spacing: .5px;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
     }
 
     td {
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      white-space: nowrap;
-      color: var(--text);
+      padding: 16px 20px;
+      background: var(--surface-solid);
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
     }
 
-    tr:hover td {
-      background: #fafbfc;
+    /* Curved table rows */
+    tr.row-item td:first-child {
+      border-left: 1px solid transparent;
+      border-top-left-radius: var(--radius-sm);
+      border-bottom-left-radius: var(--radius-sm);
+    }
+
+    tr.row-item td:last-child {
+      border-right: 1px solid transparent;
+      border-top-right-radius: var(--radius-sm);
+      border-bottom-right-radius: var(--radius-sm);
+    }
+
+    tr.row-item:hover td {
+      background: #fff;
+      border-color: var(--border);
+      box-shadow: var(--shadow-sm);
+      transform: scale(1.002);
     }
 
     tr.clickable {
       cursor: pointer;
     }
 
-    tr.clickable:hover td {
-      background: var(--primary-light);
-    }
-
-    /* Buttons */
-    .btn {
-      padding: 8px 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all .2s;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, .3);
-    }
-
-    .btn-danger {
-      background: transparent;
-      color: var(--red);
-      border: 1px solid var(--red);
-    }
-
-    .btn-danger:hover {
-      background: var(--red);
-      color: #fff;
-    }
-
-    .btn-sm {
-      padding: 5px 12px;
-      font-size: 12px;
-      border-radius: 6px;
-    }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--primary);
-      border: 1px solid var(--primary);
-    }
-
-    .btn-outline:hover {
-      background: var(--primary-light);
-    }
-
-    /* Form */
-    .form-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-      background: var(--white);
-      border: 2px solid var(--border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      flex: 1;
-      max-width: 300px;
-      transition: border .2s;
-    }
-
-    input[type="text"]:focus,
-    input[type="password"]:focus {
-      border-color: var(--primary);
-    }
-
-    /* Token display */
-    .token-cell {
-      font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 12px;
-      color: var(--primary);
-      cursor: pointer;
-      background: var(--primary-light);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .token-cell:hover {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    /* Badge */
+    /* Badges */
     .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
       font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
     .badge-green {
-      background: var(--green-light);
-      color: var(--green-text);
+      background: #dcfce7;
+      color: #166534;
     }
 
     .badge-red {
-      background: var(--red-light);
-      color: var(--red-text);
-    }
-
-    .badge-orange {
-      background: var(--orange-light);
-      color: var(--orange-text);
-    }
-
-    .badge-primary {
-      background: var(--primary-light);
-      color: var(--primary);
+      background: #fee2e2;
+      color: #991b1b;
     }
 
     .badge-blue {
-      background: var(--blue-light);
-      color: var(--blue);
+      background: #dbeafe;
+      color: #1e40af;
     }
 
-    /* Pagination */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 16px;
-      align-items: center;
+    .badge-orange {
+      background: #ffedd5;
+      color: #9a3412;
     }
 
-    .pagination .btn {
-      min-width: 36px;
-      text-align: center;
-      background: var(--white);
+    .badge-primary {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .badge-outline {
+      border: 1px solid var(--border);
+      background: transparent;
       color: var(--text2);
+    }
+
+    /* Action Buttons inside tables */
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      background: transparent;
+    }
+
+    .btn-action:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-action.danger {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-action.danger:hover {
+      background: var(--red);
+      color: white;
+    }
+
+    /* Forms inline */
+    .form-inline {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: var(--surface-solid);
+      padding: 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
       border: 1px solid var(--border);
     }
 
-    .pagination .btn:hover {
-      border-color: var(--primary);
-      color: var(--primary);
+    .form-inline input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-family: inherit;
     }
 
-    .page-info {
-      color: var(--text2);
+    .form-inline input:focus {
+      outline: none;
+    }
+
+    .form-btn {
+      background: var(--primary);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .form-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Token Cell */
+    .token-cell {
+      font-family: 'Courier New', monospace;
+      background: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 8px;
       font-size: 13px;
+      color: var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px dashed transparent;
     }
 
-    /* Section title */
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .sub-section {
-      margin-top: 28px;
+    .token-cell:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
     }
 
     /* Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, .4);
-      display: none;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 500;
-      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 2000;
     }
 
     .modal-overlay.show {
-      display: flex;
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    .modal {
-      background: var(--white);
-      border-radius: 16px;
-      width: 90%;
-      max-width: 900px;
+    .modal-content {
+      background: var(--surface-solid);
+      width: 900px;
+      max-width: 90vw;
       max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .15);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
     }
 
     .modal-header {
-      padding: 20px 24px;
+      padding: 24px 32px;
       border-bottom: 1px solid var(--border);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      background: var(--white);
-      z-index: 1;
-      border-radius: 16px 16px 0 0;
+      align-items: center;
+      background: #f8fafc;
     }
 
-    .modal-header h3 {
-      font-size: 16px;
+    .modal-title {
+      font-size: 20px;
       font-weight: 700;
     }
 
     .modal-close {
-      background: var(--bg);
+      background: transparent;
       border: none;
+      font-size: 24px;
       color: var(--text2);
-      font-size: 18px;
       cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: all .2s;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .modal-close:hover {
-      background: var(--red-light);
-      color: var(--red);
+      background: #e2e8f0;
+      color: var(--text);
     }
 
     .modal-body {
-      padding: 24px;
+      padding: 32px;
+      overflow-y: auto;
+      flex: 1;
     }
 
-    /* Detail grid */
     .detail-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin-bottom: 28px;
+      gap: 16px;
+      margin-bottom: 32px;
     }
 
-    .detail-item {
-      background: var(--bg);
-      border-radius: 10px;
+    .detail-chunk {
+      background: #f8fafc;
       padding: 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
     }
 
-    .detail-item .dt-label {
+    .dc-label {
       font-size: 11px;
-      color: var(--text2);
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-      font-weight: 600;
+      color: var(--text2);
+      font-weight: 700;
+      margin-bottom: 4px;
     }
 
-    .detail-item .dt-value {
+    .dc-value {
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 600;
       word-break: break-all;
     }
 
-    /* Code block */
-    .code-block {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
+    .code-box {
+      background: #0f172a;
+      border-radius: var(--radius-sm);
       padding: 20px;
-      margin-top: 10px;
-      font-family: 'Consolas', 'Courier New', monospace;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .code-title {
+      position: absolute;
+      top: 0;
+      left: 20px;
+      transform: translateY(-50%);
+      background: var(--primary);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 999px;
       font-size: 12px;
-      line-height: 1.8;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 350px;
-      overflow-y: auto;
-      color: var(--text);
-    }
-
-    .code-section {
-      margin-top: 24px;
-    }
-
-    .code-section h4 {
-      font-size: 14px;
       font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    }
+
+    .code-content {
+      color: #e2e8f0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .code-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .code-content::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
     }
 
     /* Toast */
     .toast {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--green);
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 14px;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #10b981;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 999px;
       font-weight: 600;
-      z-index: 999;
-      display: none;
-      animation: slideIn .3s;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, .3);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
     }
 
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0
-      }
-
-      to {
-        transform: translateX(0);
-        opacity: 1
-      }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
 
-    /* Info box */
+    /* Paginator */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .page-btn {
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .page-btn:not(:disabled):hover {
+      background: var(--bg);
+    }
+
     .info-box {
-      margin-top: 16px;
-      padding: 16px 20px;
-      background: var(--blue-light);
-      border: 1px solid #bfdbfe;
-      border-radius: var(--radius);
-      color: var(--blue);
-      font-size: 13px;
+      background: var(--primary-light);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      color: var(--primary);
       font-weight: 500;
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
 
-    .main-app {
-      display: none;
+    STRONG {
+      color: var(--text);
     }
   </style>
 </head>
@@ -674,168 +838,172 @@
   <!-- 登录页面 -->
   <div class="login-overlay" id="login-overlay">
     <div class="login-box">
-      <div class="icon">🛡️</div>
+      <div class="login-icon">✨</div>
       <h2>管理后台</h2>
       <p>Vertex-OpenAI Proxy</p>
-      <input type="password" id="login-pwd" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="btn btn-primary" onclick="doLogin()">登 录</button>
-      <div class="login-error" id="login-error">密码错误</div>
+
+      <input type="password" id="login-pwd" class="input-curved" placeholder="输入管理员密码"
+        onkeypress="if(event.key==='Enter') doLogin()">
+      <button class="btn btn-pill" onclick="doLogin()">进入控制面板</button>
+
+      <div id="login-error"></div>
     </div>
   </div>
 
   <!-- 主应用 -->
   <div class="main-app" id="main-app">
-    <div class="header">
-      <div class="logo">
-        <div class="logo-icon">V</div>
-        <h1>Vertex-OpenAI Proxy</h1>
+
+    <div class="header-nav">
+      <div class="brand">
+        <div class="brand-logo">V</div>
+        <h1>Vertex-OpenAI</h1>
       </div>
-      <div class="header-right">
-        <span class="logout" onclick="doLogout()">🚪 退出</span>
+      <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('logs')">🌊 流量日志</div>
+        <div class="nav-tab" onclick="switchTab('stats')">📊 统计分析</div>
+        <div class="nav-tab" onclick="switchTab('users')">👥 用户管理</div>
+        <div class="nav-tab" onclick="switchTab('apikeys')">🔑 API Key</div>
       </div>
+      <button class="btn logout-btn" onclick="doLogout()">退出登录</button>
     </div>
 
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('logs')">📋 流量日志</div>
-      <div class="tab" onclick="switchTab('stats')">📊 Token 统计</div>
-      <div class="tab" onclick="switchTab('users')">👥 用户管理</div>
-      <div class="tab" onclick="switchTab('apikeys')">🔑 API Key</div>
-    </div>
-
-    <div class="content">
-      <!-- 流量日志 -->
-      <div class="panel active" id="panel-logs">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>状态</th>
-                <th>方法</th>
-                <th>模型</th>
-                <th>协议</th>
-                <th>Key 序号</th>
-                <th>Token 消耗</th>
-                <th>耗时</th>
-                <th>时间</th>
-              </tr>
-            </thead>
-            <tbody id="logs-body"></tbody>
-          </table>
-        </div>
+    <!-- 流量日志 -->
+    <div class="panel active" id="panel-logs">
+      <div class="glass-container">
+        <table>
+          <thead>
+            <tr>
+              <th>状态</th>
+              <th>方法</th>
+              <th>模型</th>
+              <th>协议</th>
+              <th>Key 序号</th>
+              <th>Token 消耗 (In/Out)</th>
+              <th>耗时</th>
+              <th>请求时间</th>
+            </tr>
+          </thead>
+          <tbody id="logs-body"></tbody>
+        </table>
         <div class="pagination" id="logs-pagination"></div>
       </div>
+    </div>
 
-      <!-- Token 统计 -->
-      <div class="panel" id="panel-stats">
-        <div class="stats-grid" id="stats-cards"></div>
-        <div class="sub-section">
-          <div class="section-title">📊 按用户统计</div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>用户</th>
-                  <th>请求数</th>
-                  <th>Prompt Tokens</th>
-                  <th>Completion Tokens</th>
-                  <th>总 Tokens</th>
-                </tr>
-              </thead>
-              <tbody id="stats-users"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="sub-section">
-          <div class="section-title">🤖 按模型统计</div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>模型</th>
-                  <th>请求数</th>
-                  <th>Prompt Tokens</th>
-                  <th>Completion Tokens</th>
-                  <th>总 Tokens</th>
-                </tr>
-              </thead>
-              <tbody id="stats-models"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="sub-section">
-          <div class="section-title">📅 每日趋势（最近 30 天）</div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>日期</th>
-                  <th>请求数</th>
-                  <th>总 Tokens</th>
-                </tr>
-              </thead>
-              <tbody id="stats-dates"></tbody>
-            </table>
-          </div>
-        </div>
+    <!-- 统计分析 -->
+    <div class="panel" id="panel-stats">
+      <div class="stats-grid" id="stats-cards"></div>
+
+      <div class="glass-container">
+        <div class="section-title">👥 按用户统计</div>
+        <table>
+          <thead>
+            <tr>
+              <th>用户</th>
+              <th>请求数</th>
+              <th>Prompt Tokens</th>
+              <th>Completion Tokens</th>
+              <th>总 Tokens</th>
+            </tr>
+          </thead>
+          <tbody id="stats-users"></tbody>
+        </table>
       </div>
 
-      <!-- 用户管理 -->
-      <div class="panel" id="panel-users">
-        <div class="form-row">
-          <input type="text" id="new-user-name" placeholder="输入用户名">
-          <button class="btn btn-primary" onclick="createUser()">+ 创建用户</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>用户名</th>
-                <th>Token</th>
-                <th>创建时间</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="users-body"></tbody>
-          </table>
-        </div>
+      <div class="glass-container">
+        <div class="section-title">🤖 按模型统计</div>
+        <table>
+          <thead>
+            <tr>
+              <th>模型</th>
+              <th>请求数</th>
+              <th>Prompt Tokens</th>
+              <th>Completion Tokens</th>
+              <th>总 Tokens</th>
+            </tr>
+          </thead>
+          <tbody id="stats-models"></tbody>
+        </table>
       </div>
 
-      <!-- API Key 管理 -->
-      <div class="panel" id="panel-apikeys">
-        <div class="form-row">
-          <input type="text" id="new-apikey-name" placeholder="备注名（可选）" style="max-width:180px">
-          <input type="text" id="new-apikey-value" placeholder="输入 Vertex AI API Key">
-          <button class="btn btn-primary" onclick="addApiKey()">+ 添加 Key</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>备注</th>
-                <th>API Key</th>
-                <th>请求数</th>
-                <th>上次使用</th>
-                <th>状态</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="apikeys-body"></tbody>
-          </table>
-        </div>
-        <div class="info-box">
-          💡 多个 API Key 将以 <strong>轮询（Round-Robin）</strong> 方式分配请求，自动均衡负载。如果 Key 池为空，将回退到 .env 中的 VERTEX_API_KEY。
+      <div class="glass-container">
+        <div class="section-title">📅 每日趋势 (近30天)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>请求数</th>
+              <th>总 Tokens</th>
+            </tr>
+          </thead>
+          <tbody id="stats-dates"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 用户管理 -->
+    <div class="panel" id="panel-users">
+      <div class="form-inline">
+        <input type="text" id="new-user-name" placeholder="为新用户起个名字...">
+        <button class="btn form-btn" onclick="createUser()">+ 创建专属 Token</button>
+      </div>
+      <div class="glass-container">
+        <table>
+          <thead>
+            <tr>
+              <th>用户名</th>
+              <th>调用 Token (点击复制)</th>
+              <th>创建时间</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API Key 管理 -->
+    <div class="panel" id="panel-apikeys">
+      <div class="form-inline">
+        <input type="text" id="new-apikey-name" placeholder="备注名称" style="flex: 0.4;">
+        <span style="color:var(--border); align-self:center;">|</span>
+        <input type="text" id="new-apikey-value" placeholder="粘贴 Vertex AI API Key...">
+        <button class="btn form-btn" onclick="addApiKey()">+ 添入密钥池</button>
+      </div>
+
+      <div class="glass-container">
+        <table>
+          <thead>
+            <tr>
+              <th>备注名称</th>
+              <th>API Key (脱敏)</th>
+              <th>总调用次数</th>
+              <th>上次使用</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="apikeys-body"></tbody>
+        </table>
+      </div>
+
+      <div class="info-box">
+        <span style="font-size:24px">💡</span>
+        <div>
+          多把 API Key 共同工作时将采用 <strong>轮询策略 (Round-Robin)</strong> 自动分发请求，抗住高并发。
+          <br> 如果此处列表为空，系统会自动寻找 <code>.env</code> 文件里的 <code>VERTEX_API_KEY</code> 作为保底。
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 日志详情弹窗 -->
+  </div> <!-- main-app -->
+
+  <!-- 日志详情 Modal -->
   <div class="modal-overlay" id="detail-modal" onclick="if(event.target===this)closeDetail()">
-    <div class="modal">
+    <div class="modal-content">
       <div class="modal-header">
-        <h3>📄 请求详情</h3>
-        <button class="modal-close" onclick="closeDetail()">✕</button>
+        <div class="modal-title">📄 API 报文追踪</div>
+        <button class="modal-close" onclick="closeDetail()">×</button>
       </div>
       <div class="modal-body" id="detail-body"></div>
     </div>
@@ -843,6 +1011,7 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- JavaScript Logic (Preserved entirely!) -->
   <script>
     let adminToken = localStorage.getItem('admin_token') || '';
     let headers = { 'Content-Type': 'application/json' };
@@ -893,14 +1062,19 @@
     // ---- Tab ----
     function switchTab(name) {
       const map = { 'logs': '流量', 'stats': '统计', 'users': '用户', 'apikeys': 'API Key' };
-      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.textContent.includes(map[name])));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.textContent.includes(map[name])));
       document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
       if (name === 'logs') loadLogs(); if (name === 'stats') loadStats();
       if (name === 'users') loadUsers(); if (name === 'apikeys') loadApiKeys();
     }
 
     // ---- Utils ----
-    function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2500); }
+    function toastMsg(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
     function fmtTokens(n) { if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k'; return n + ''; }
     function fmtDuration(ms) { if (ms >= 60000) return (ms / 60000).toFixed(1) + 'min'; if (ms >= 1000) return (ms / 1000).toFixed(1) + 's'; return ms + 'ms'; }
     function statusBadge(s) {
@@ -923,22 +1097,22 @@
       if (page) logsPage = page;
       const res = await fetch(`/admin/api/logs?page=${logsPage}&pageSize=50`, { headers });
       const data = await res.json();
-      document.getElementById('logs-body').innerHTML = data.data.map(l => `<tr class="clickable" ondblclick="showDetail('${l.id}')">
+      document.getElementById('logs-body').innerHTML = data.data.map(l => `<tr class="row-item clickable" ondblclick="showDetail('${l.id}')">
     <td>${statusBadge(l.status || l.statusText)}</td>
-    <td><span class="badge badge-primary">${l.method || 'POST'}</span></td>
+    <td><span class="badge badge-outline">${l.method || 'POST'}</span></td>
     <td><strong>${l.model || '-'}</strong></td>
-    <td><span class="badge badge-blue">${l.protocol || 'openai'}</span></td>
+    <td><span class="badge badge-primary">${l.protocol || 'openai'}</span></td>
     <td>${l.keyName || '#' + (l.keyIndex || '?')}</td>
-    <td>In: <strong>${fmtTokens(l.promptTokens || 0)}</strong> / Out: <strong>${fmtTokens(l.completionTokens || 0)}</strong></td>
+    <td><span style="color:var(--primary);font-weight:600">${fmtTokens(l.promptTokens || 0)}</span> / <span style="color:var(--green-text);font-weight:600">${fmtTokens(l.completionTokens || 0)}</span></td>
     <td>${fmtDuration(l.duration || 0)}</td>
-    <td>${new Date(l.timestamp).toLocaleString('zh-CN')}</td>
+    <td style="color:var(--text2);font-size:12px">${new Date(l.timestamp).toLocaleString('zh-CN')}</td>
   </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:40px">暂无记录</td></tr>';
       const tp = Math.ceil(data.total / data.pageSize) || 1;
       document.getElementById('logs-pagination').innerHTML = `
-    <button class="btn btn-sm" onclick="loadLogs(1)" ${logsPage <= 1 ? 'disabled' : ''}>首页</button>
-    <button class="btn btn-sm" onclick="loadLogs(${logsPage - 1})" ${logsPage <= 1 ? 'disabled' : ''}>‹ 上一页</button>
-    <span class="page-info">第 ${logsPage} / ${tp} 页 · 共 ${data.total} 条</span>
-    <button class="btn btn-sm" onclick="loadLogs(${logsPage + 1})" ${logsPage >= tp ? 'disabled' : ''}>下一页 ›</button>
+    <button class="btn page-btn" onclick="loadLogs(1)" ${logsPage <= 1 ? 'disabled' : ''}>首页</button>
+    <button class="btn page-btn" onclick="loadLogs(${logsPage - 1})" ${logsPage <= 1 ? 'disabled' : ''}>‹ 上一页</button>
+    <span style="font-weight:600; font-size:14px">第 ${logsPage} / ${tp} 页</span>
+    <button class="btn page-btn" onclick="loadLogs(${logsPage + 1})" ${logsPage >= tp ? 'disabled' : ''}>下一页 ›</button>
   `;
     }
 
@@ -950,17 +1124,17 @@
       const resStr = prettyJSON(l.responseBody);
       document.getElementById('detail-body').innerHTML = `
     <div class="detail-grid">
-      <div class="detail-item"><div class="dt-label">请求时间</div><div class="dt-value">${new Date(l.timestamp).toLocaleString('zh-CN')}</div></div>
-      <div class="detail-item"><div class="dt-label">耗时</div><div class="dt-value" style="color:var(--orange)">${fmtDuration(l.duration || 0)}</div></div>
-      <div class="detail-item"><div class="dt-label">Token 消耗 (输入/输出)</div><div class="dt-value">In: <span style="color:var(--primary)">${fmtTokens(l.promptTokens || 0)}</span> · Out: <span style="color:var(--green-text)">${fmtTokens(l.completionTokens || 0)}</span></div></div>
-      <div class="detail-item"><div class="dt-label">请求协议</div><div class="dt-value">${l.protocol || 'openai'}</div></div>
-      <div class="detail-item"><div class="dt-label">使用模型</div><div class="dt-value" style="color:var(--primary)">${l.model || '-'}</div></div>
-      <div class="detail-item"><div class="dt-label">使用 Key</div><div class="dt-value">${l.keyName || '#' + (l.keyIndex || '?')}</div></div>
-      <div class="detail-item"><div class="dt-label">用户</div><div class="dt-value">${l.userName || '匿名'}</div></div>
-      <div class="detail-item"><div class="dt-label">状态</div><div class="dt-value">${statusBadge(l.status || l.statusText)}</div></div>
+      <div class="detail-chunk"><div class="dc-label">请求时间</div><div class="dc-value">${new Date(l.timestamp).toLocaleString('zh-CN')}</div></div>
+      <div class="detail-chunk"><div class="dc-label">耗时</div><div class="dc-value" style="color:#d97706">${fmtDuration(l.duration || 0)}</div></div>
+      <div class="detail-chunk"><div class="dc-label">Token (In/Out)</div><div class="dc-value"><span style="color:var(--primary)">${fmtTokens(l.promptTokens || 0)}</span> / <span style="color:var(--green-text)">${fmtTokens(l.completionTokens || 0)}</span></div></div>
+      <div class="detail-chunk"><div class="dc-label">请求协议</div><div class="dc-value">${l.protocol || 'openai'}</div></div>
+      <div class="detail-chunk"><div class="dc-label">使用模型</div><div class="dc-value" style="color:var(--primary)">${l.model || '-'}</div></div>
+      <div class="detail-chunk"><div class="dc-label">使用 Key</div><div class="dc-value">${l.keyName || '#' + (l.keyIndex || '?')}</div></div>
+      <div class="detail-chunk"><div class="dc-label">触发用户</div><div class="dc-value">${l.userName || '匿名'}</div></div>
+      <div class="detail-chunk"><div class="dc-label">最终状态</div><div class="dc-value">${statusBadge(l.status || l.statusText)}</div></div>
     </div>
-    <div class="code-section"><h4>📤 请求报文 (Request)</h4><div class="code-block">${escHtml(reqStr)}</div></div>
-    <div class="code-section"><h4>📥 响应报文 (Response)</h4><div class="code-block">${escHtml(resStr)}</div></div>
+    <div class="code-box"><div class="code-title">Request Payload</div><div class="code-content">${escHtml(reqStr)}</div></div>
+    <div class="code-box"><div class="code-title">Response Content</div><div class="code-content">${escHtml(resStr)}</div></div>
   `;
       document.getElementById('detail-modal').classList.add('show');
     }
@@ -971,54 +1145,58 @@
       const res = await fetch('/admin/api/stats', { headers });
       const s = await res.json();
       document.getElementById('stats-cards').innerHTML = `
-    <div class="stat-card purple"><div class="label"><span class="ico" style="background:var(--primary)"></span>总 Token</div><div class="value">${fmtTokens(s.totalTokens)}</div></div>
-    <div class="stat-card green"><div class="label"><span class="ico" style="background:var(--green)"></span>输入 Token</div><div class="value">${fmtTokens(s.totalPromptTokens)}</div></div>
-    <div class="stat-card orange"><div class="label"><span class="ico" style="background:var(--orange)"></span>输出 Token</div><div class="value">${fmtTokens(s.totalCompletionTokens)}</div></div>
-    <div class="stat-card blue"><div class="label"><span class="ico" style="background:var(--blue)"></span>总请求数</div><div class="value">${s.totalRequests}</div></div>
+    <div class="stat-card purple"><div class="stat-label">总消耗 Tokens</div><div class="stat-value">${fmtTokens(s.totalTokens)}</div></div>
+    <div class="stat-card green"><div class="stat-label">Prompt Tokens</div><div class="stat-value">${fmtTokens(s.totalPromptTokens)}</div></div>
+    <div class="stat-card orange"><div class="stat-label">Completion Tokens</div><div class="stat-value">${fmtTokens(s.totalCompletionTokens)}</div></div>
+    <div class="stat-card blue"><div class="stat-label">总计请求频次</div><div class="stat-value">${s.totalRequests}</div></div>
   `;
-      document.getElementById('stats-users').innerHTML = s.byUser.map(u => `<tr><td><strong>${u.name}</strong></td><td>${u.requests}</td><td>${fmtTokens(u.promptTokens)}</td><td>${fmtTokens(u.completionTokens)}</td><td><strong>${fmtTokens(u.totalTokens)}</strong></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:30px">暂无数据</td></tr>';
-      document.getElementById('stats-models').innerHTML = s.byModel.map(m => `<tr><td><strong>${m.model}</strong></td><td>${m.requests}</td><td>${fmtTokens(m.promptTokens)}</td><td>${fmtTokens(m.completionTokens)}</td><td><strong>${fmtTokens(m.totalTokens)}</strong></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:30px">暂无数据</td></tr>';
-      document.getElementById('stats-dates').innerHTML = s.byDate.map(d => `<tr><td>${d.date}</td><td>${d.requests}</td><td><strong>${fmtTokens(d.totalTokens)}</strong></td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text2);padding:30px">暂无数据</td></tr>';
+      document.getElementById('stats-users').innerHTML = s.byUser.map(u => `<tr class="row-item"><td><strong>${u.name}</strong></td><td>${u.requests}</td><td>${fmtTokens(u.promptTokens)}</td><td>${fmtTokens(u.completionTokens)}</td><td><strong>${fmtTokens(u.totalTokens)}</strong></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:30px">暂无数据</td></tr>';
+      document.getElementById('stats-models').innerHTML = s.byModel.map(m => `<tr class="row-item"><td><strong>${m.model}</strong></td><td>${m.requests}</td><td>${fmtTokens(m.promptTokens)}</td><td>${fmtTokens(m.completionTokens)}</td><td><strong>${fmtTokens(m.totalTokens)}</strong></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:30px">暂无数据</td></tr>';
+      document.getElementById('stats-dates').innerHTML = s.byDate.map(d => `<tr class="row-item"><td>${d.date}</td><td>${d.requests}</td><td><strong>${fmtTokens(d.totalTokens)}</strong></td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text2);padding:30px">暂无数据</td></tr>';
     }
 
     // ---- 用户管理 ----
     async function loadUsers() {
       const res = await fetch('/admin/api/users', { headers });
       const users = await res.json();
-      document.getElementById('users-body').innerHTML = users.map(u => `<tr>
+      document.getElementById('users-body').innerHTML = users.map(u => `<tr class="row-item">
     <td><strong>${u.name}</strong></td>
-    <td><span class="token-cell" onclick="copyToken('${u.token}')" title="点击复制">${u.token}</span></td>
-    <td>${new Date(u.createdAt).toLocaleString('zh-CN')}</td>
-    <td><span class="badge ${u.enabled !== false ? 'badge-green' : 'badge-red'}">${u.enabled !== false ? '启用' : '禁用'}</span></td>
+    <td><span class="token-cell" onclick="copyToken('${u.token}')" title="点击复制 Token">🔑 ${u.token}</span></td>
+    <td style="color:var(--text2); font-size:12px">${new Date(u.createdAt).toLocaleString('zh-CN')}</td>
+    <td><span class="badge ${u.enabled !== false ? 'badge-green' : 'badge-red'}">${u.enabled !== false ? '活跃中' : '已停用'}</span></td>
     <td>
-      <button class="btn btn-sm ${u.enabled !== false ? 'btn-danger' : 'btn-outline'}" onclick="toggleUser('${u.id}',${u.enabled === false})">${u.enabled !== false ? '禁用' : '启用'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}','${u.name}')">删除</button>
+      <div class="action-row">
+        <button class="btn btn-action" onclick="toggleUser('${u.id}',${u.enabled === false})">${u.enabled !== false ? '停用' : '启用'}</button>
+        <button class="btn btn-action danger" onclick="deleteUser('${u.id}','${u.name}')">删除</button>
+      </div>
     </td>
-  </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:30px">暂无用户</td></tr>';
+  </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:30px">暂无用户，立即创建一个专属 Token 吧</td></tr>';
     }
-    async function createUser() { const i = document.getElementById('new-user-name'); const n = i.value.trim(); if (!n) return; const r = await fetch('/admin/api/users', { method: 'POST', headers, body: JSON.stringify({ name: n }) }); const u = await r.json(); i.value = ''; toast(`创建成功！Token: ${u.token}`); loadUsers(); }
-    async function deleteUser(id, name) { if (!confirm(`确认删除 "${name}" ？`)) return; await fetch(`/admin/api/users/${id}`, { method: 'DELETE', headers }); toast('已删除'); loadUsers(); }
+    async function createUser() { const i = document.getElementById('new-user-name'); const n = i.value.trim(); if (!n) return; const r = await fetch('/admin/api/users', { method: 'POST', headers, body: JSON.stringify({ name: n }) }); const u = await r.json(); i.value = ''; toastMsg(`🎉 用户创建成功！`); loadUsers(); }
+    async function deleteUser(id, name) { if (!confirm(`危险操作：确认永远删除用户 "${name}" 吗？`)) return; await fetch(`/admin/api/users/${id}`, { method: 'DELETE', headers }); toastMsg('已删除'); loadUsers(); }
     async function toggleUser(id, en) { await fetch(`/admin/api/users/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ enabled: en }) }); loadUsers(); }
-    function copyToken(t) { navigator.clipboard.writeText(t).then(() => toast('已复制到剪贴板')); }
+    function copyToken(t) { navigator.clipboard.writeText(t).then(() => toastMsg('✂️ 已复制到剪贴板')); }
 
     // ---- API Key ----
     async function loadApiKeys() {
       const res = await fetch('/admin/api/apikeys', { headers });
       const keys = await res.json();
-      document.getElementById('apikeys-body').innerHTML = keys.map(k => `<tr>
+      document.getElementById('apikeys-body').innerHTML = keys.map(k => `<tr class="row-item">
     <td><strong>${k.name || '-'}</strong></td>
-    <td><span class="token-cell" title="API Key 已脱敏">${k.key}</span></td>
-    <td>${(k.requestCount || 0).toLocaleString()}</td>
-    <td>${k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleString('zh-CN') : '未使用'}</td>
-    <td><span class="badge ${k.enabled !== false ? 'badge-green' : 'badge-red'}">${k.enabled !== false ? '启用' : '禁用'}</span></td>
+    <td><span class="token-cell" title="API Key 为机密信息，已做脱敏展示">${k.key}</span></td>
+    <td><strong>${(k.requestCount || 0).toLocaleString()}</strong> 次</td>
+    <td style="color:var(--text2); font-size:12px">${k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleString('zh-CN') : '尚未激活'}</td>
+    <td><span class="badge ${k.enabled !== false ? 'badge-green' : 'badge-red'}">${k.enabled !== false ? '工作池中' : '已被移出'}</span></td>
     <td>
-      <button class="btn btn-sm ${k.enabled !== false ? 'btn-danger' : 'btn-outline'}" onclick="toggleApiKey('${k.id}',${k.enabled === false})">${k.enabled !== false ? '禁用' : '启用'}</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteApiKey('${k.id}')">删除</button>
+      <div class="action-row">
+        <button class="btn btn-action" onclick="toggleApiKey('${k.id}',${k.enabled === false})">${k.enabled !== false ? '下线' : '上线'}</button>
+        <button class="btn btn-action danger" onclick="deleteApiKey('${k.id}')">剔除</button>
+      </div>
     </td>
-  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:30px">暂无 API Key</td></tr>';
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:30px">当前工作池为空</td></tr>';
     }
-    async function addApiKey() { const ni = document.getElementById('new-apikey-name'), ki = document.getElementById('new-apikey-value'); const k = ki.value.trim(); if (!k) return toast('请输入 API Key'); const r = await fetch('/admin/api/apikeys', { method: 'POST', headers, body: JSON.stringify({ key: k, name: ni.value.trim() }) }); const d = await r.json(); if (d.error) return toast(d.error); ni.value = ''; ki.value = ''; toast('添加成功'); loadApiKeys(); }
-    async function deleteApiKey(id) { if (!confirm('确认删除？')) return; await fetch(`/admin/api/apikeys/${id}`, { method: 'DELETE', headers }); toast('已删除'); loadApiKeys(); }
+    async function addApiKey() { const ni = document.getElementById('new-apikey-name'), ki = document.getElementById('new-apikey-value'); const k = ki.value.trim(); if (!k) return toastMsg('请输入有效的 API Key'); const r = await fetch('/admin/api/apikeys', { method: 'POST', headers, body: JSON.stringify({ key: k, name: ni.value.trim() }) }); const d = await r.json(); if (d.error) return toastMsg(d.error); ni.value = ''; ki.value = ''; toastMsg('✨ 添加成功，已并入负载均衡池'); loadApiKeys(); }
+    async function deleteApiKey(id) { if (!confirm('确定将该 Key 彻底移出轮询池吗？')) return; await fetch(`/admin/api/apikeys/${id}`, { method: 'DELETE', headers }); toastMsg('已剔除'); loadApiKeys(); }
     async function toggleApiKey(id, en) { await fetch(`/admin/api/apikeys/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ enabled: en }) }); loadApiKeys(); }
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
