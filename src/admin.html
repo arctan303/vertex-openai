@@ -863,6 +863,7 @@
         <div class="nav-tab" onclick="switchTab('stats')">📊 统计分析</div>
         <div class="nav-tab" onclick="switchTab('users')">👥 用户管理</div>
         <div class="nav-tab" onclick="switchTab('apikeys')">🔑 API Key</div>
+        <div class="nav-tab" onclick="switchTab('models')">🌐 支持模型</div>
       </div>
       <button class="btn logout-btn" onclick="doLogout()">退出登录</button>
     </div>
@@ -996,6 +997,31 @@
       </div>
     </div>
 
+    <!-- 支持模型列表 -->
+    <div class="panel" id="panel-models">
+      <div class="glass-container">
+        <div class="section-title">✨ 当前系统已接入且兼容的可用模型库</div>
+        <table>
+          <thead>
+            <tr>
+              <th>模型 ID (调用使用)</th>
+              <th>模型展现名称</th>
+              <th>归属</th>
+            </tr>
+          </thead>
+          <tbody id="models-body"></tbody>
+        </table>
+      </div>
+
+      <div class="info-box">
+        <span style="font-size:24px">🚀</span>
+        <div>
+          上方列表数据为管理端自 <code>GET /v1/models</code> 接口自动拉取。<br>
+          所有受支持的大模型（文本/视觉对话、生成图像、向量库）均严格遵守原生 OpenAI 传参及返回规范，享受底层 Vertex AI 强大的免梯节点路由与高性能加速。
+        </div>
+      </div>
+    </div>
+
   </div> <!-- main-app -->
 
   <!-- 日志详情 Modal -->
@@ -1061,11 +1087,12 @@
 
     // ---- Tab ----
     function switchTab(name) {
-      const map = { 'logs': '流量', 'stats': '统计', 'users': '用户', 'apikeys': 'API Key' };
+      const map = { 'logs': '流量', 'stats': '统计', 'users': '用户', 'apikeys': 'API Key', 'models': '模型' };
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.textContent.includes(map[name])));
       document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
       if (name === 'logs') loadLogs(); if (name === 'stats') loadStats();
       if (name === 'users') loadUsers(); if (name === 'apikeys') loadApiKeys();
+      if (name === 'models') loadModels();
     }
 
     // ---- Utils ----
@@ -1139,6 +1166,21 @@
       document.getElementById('detail-modal').classList.add('show');
     }
     function closeDetail() { document.getElementById('detail-modal').classList.remove('show'); }
+
+    // ---- 模型列表 ----
+    async function loadModels() {
+      try {
+        const res = await fetch('/v1/models');
+        const data = await res.json();
+        document.getElementById('models-body').innerHTML = data.data.map(m => `<tr class="row-item">
+          <td><span class="token-cell"><strong>${m.id}</strong></span></td>
+          <td style="color:var(--text2);">${m.name || m.id}</td>
+          <td><span class="badge badge-primary">${m.owned_by}</span></td>
+        </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text2);padding:30px">暂无可用模型</td></tr>';
+      } catch (err) {
+        document.getElementById('models-body').innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--red);padding:30px">无法连接到接口获取模型列表</td></tr>';
+      }
+    }
 
     // ---- 统计 ----
     async function loadStats() {
