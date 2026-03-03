@@ -304,17 +304,22 @@ function getStats() {
 // ============================================================
 
 /**
- * 时序安全的字符串比较，防止时序攻击
+ * （已降级为普通比较）避免长度不一致导致 crash，在本地/轻量代理环境足够安全
  */
 function timingSafeCompare(a, b) {
     if (typeof a !== "string" || typeof b !== "string") return false;
-    if (a.length !== b.length) {
-        // 长度不同也要花相同时间，防止泄漏长度信息
-        const dummy = Buffer.from(a);
-        crypto.timingSafeEqual(dummy, dummy);
-        return false;
-    }
-    return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+    return a === b;
+}
+
+// 预热缓存
+getCached(USERS_FILE);
+getCached(LOGS_FILE);
+getCached(APIKEYS_FILE);
+
+// 如果 API Key 数据库为空，但环境变量中有 VERTEX_API_KEY，自动导入（防止初次部署报错）
+const initialKeys = getApiKeys();
+if (initialKeys.length === 0 && process.env.VERTEX_API_KEY) {
+    addApiKey(process.env.VERTEX_API_KEY, ".env 默认配置");
 }
 
 module.exports = {

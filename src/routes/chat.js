@@ -13,7 +13,7 @@ const {
 
 const router = express.Router();
 
-const VERTEX_BASE_URL = "https://aiplatform.googleapis.com/v1/publishers/google/models";
+const VERTEX_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 // 截断字符串，避免日志过大
 function truncate(str, max = 8000) {
@@ -61,6 +61,12 @@ router.post("/", async (req, res) => {
             const errText = await upstream.text();
             let errJson;
             try { errJson = JSON.parse(errText); } catch { errJson = { message: errText }; }
+
+            // 增加详细的 Upstream Error Logging (屏蔽敏感 Key)
+            const maskedUrl = url.replace(/key=[^&]+/, "key=***");
+            console.error(`\n[Upstream Error] ${upstream.status} ${upstream.statusText}`);
+            console.error(`[Upstream URL] ${maskedUrl}`);
+            console.error(`[Upstream Response] ${errText}\n`);
 
             store.addLog({
                 userId: req.user?.id || null,
