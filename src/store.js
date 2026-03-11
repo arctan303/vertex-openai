@@ -56,7 +56,7 @@ function flushDirty() {
     for (const file of _dirty) {
         const data = _cache[file];
         if (data !== undefined) {
-            fs.writeFile(file, JSON.stringify(data, null, 2), "utf-8", (err) => {
+            fs.writeFile(file, JSON.stringify(data), "utf-8", (err) => {
                 if (err) console.error(`[store] flush error for ${path.basename(file)}:`, err.message);
             });
         }
@@ -72,7 +72,7 @@ function flushSync() {
     for (const file of _dirty) {
         const data = _cache[file];
         if (data !== undefined) {
-            try { fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf-8"); } catch { }
+            try { fs.writeFileSync(file, JSON.stringify(data), "utf-8"); } catch { }
         }
     }
     _dirty.clear();
@@ -304,11 +304,17 @@ function getStats() {
 // ============================================================
 
 /**
- * （已降级为普通比较）避免长度不一致导致 crash，在本地/轻量代理环境足够安全
+ * 使用 Hash 对齐长度，再进行恒定时间比较，防止时序攻击
  */
 function timingSafeCompare(a, b) {
     if (typeof a !== "string" || typeof b !== "string") return false;
-    return a === b;
+    try {
+        const bufA = crypto.createHash("sha256").update(a).digest();
+        const bufB = crypto.createHash("sha256").update(b).digest();
+        return crypto.timingSafeEqual(bufA, bufB);
+    } catch {
+        return false;
+    }
 }
 
 // 预热缓存
